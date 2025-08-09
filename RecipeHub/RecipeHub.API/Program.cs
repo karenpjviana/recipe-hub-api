@@ -48,9 +48,11 @@ if (string.IsNullOrEmpty(connectionString))
     connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 }
 
-// Log da string de conexão (apenas para debug - remover em produção)
-builder.Services.AddLogging();
+// Log da string de conexão (apenas para debug)
 Console.WriteLine($"Connection String: {(string.IsNullOrEmpty(connectionString) ? "EMPTY!" : "SET")}");
+
+// Configurar a string de conexão no Configuration para que seja usada globalmente
+builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
 
 builder.Services.AddDbContext<RecipeDbContext>(options =>
     options.UseNpgsql(connectionString)
