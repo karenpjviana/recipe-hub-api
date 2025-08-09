@@ -40,8 +40,18 @@ builder.Services.AddSwaggerGen(c =>
 
 // Database & Interceptors
 builder.Services.AddScoped<SoftDeleteInterceptor>();
-var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ?? 
-                      builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Configuração da string de conexão com fallback
+var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+if (string.IsNullOrEmpty(connectionString))
+{
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+}
+
+// Log da string de conexão (apenas para debug - remover em produção)
+builder.Services.AddLogging();
+Console.WriteLine($"Connection String: {(string.IsNullOrEmpty(connectionString) ? "EMPTY!" : "SET")}");
+
 builder.Services.AddDbContext<RecipeDbContext>(options =>
     options.UseNpgsql(connectionString)
            .AddInterceptors(new SoftDeleteInterceptor()));
@@ -121,15 +131,5 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
-// Auto-executar migrations em produção
-if (app.Environment.IsProduction())
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var context = scope.ServiceProvider.GetRequiredService<RecipeDbContext>();
-        context.Database.Migrate();
-    }
-}
 
 app.Run();
