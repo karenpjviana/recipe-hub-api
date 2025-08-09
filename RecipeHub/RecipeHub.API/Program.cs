@@ -63,12 +63,10 @@ Console.WriteLine($"Final connection string length: {connectionString?.Length ??
 // Substituir configuração completamente
 builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
 
-builder.Services.AddDbContext<RecipeDbContext>((serviceProvider, options) =>
+builder.Services.AddDbContext<RecipeDbContext>(options =>
 {
-    var config = serviceProvider.GetRequiredService<IConfiguration>();
-    var connStr = config.GetConnectionString("DefaultConnection");
-    Console.WriteLine($"DbContext using connection string length: {connStr?.Length ?? 0}");
-    options.UseNpgsql(connStr)
+    Console.WriteLine($"DbContext factory using connection string length: {connectionString?.Length ?? 0}");
+    options.UseNpgsql(connectionString)
            .AddInterceptors(new SoftDeleteInterceptor());
 });
 
