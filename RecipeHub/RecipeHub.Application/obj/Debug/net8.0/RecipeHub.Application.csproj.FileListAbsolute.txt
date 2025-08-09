@@ -1,0 +1,15 @@
+/Users/teste/Documents/TI/CURSOS/recipe-hub/RecipeHub/RecipeHub.Application/bin/Debug/net8.0/RecipeHub.Application.deps.json
+/Users/teste/Documents/TI/CURSOS/recipe-hub/RecipeHub/RecipeHub.Application/bin/Debug/net8.0/RecipeHub.Application.dll
+/Users/teste/Documents/TI/CURSOS/recipe-hub/RecipeHub/RecipeHub.Application/bin/Debug/net8.0/RecipeHub.Application.pdb
+/Users/teste/Documents/TI/CURSOS/recipe-hub/RecipeHub/RecipeHub.Application/bin/Debug/net8.0/RecipeHub.Domain.dll
+/Users/teste/Documents/TI/CURSOS/recipe-hub/RecipeHub/RecipeHub.Application/bin/Debug/net8.0/RecipeHub.Domain.pdb
+/Users/teste/Documents/TI/CURSOS/recipe-hub/RecipeHub/RecipeHub.Application/obj/Debug/net8.0/RecipeHub.Application.csproj.AssemblyReference.cache
+/Users/teste/Documents/TI/CURSOS/recipe-hub/RecipeHub/RecipeHub.Application/obj/Debug/net8.0/RecipeHub.Application.GeneratedMSBuildEditorConfig.editorconfig
+/Users/teste/Documents/TI/CURSOS/recipe-hub/RecipeHub/RecipeHub.Application/obj/Debug/net8.0/RecipeHub.Application.AssemblyInfoInputs.cache
+/Users/teste/Documents/TI/CURSOS/recipe-hub/RecipeHub/RecipeHub.Application/obj/Debug/net8.0/RecipeHub.Application.AssemblyInfo.cs
+/Users/teste/Documents/TI/CURSOS/recipe-hub/RecipeHub/RecipeHub.Application/obj/Debug/net8.0/RecipeHub.Application.csproj.CoreCompileInputs.cache
+/Users/teste/Documents/TI/CURSOS/recipe-hub/RecipeHub/RecipeHub.Application/obj/Debug/net8.0/RecipeHub.Application.csproj.CopyComplete
+/Users/teste/Documents/TI/CURSOS/recipe-hub/RecipeHub/RecipeHub.Application/obj/Debug/net8.0/RecipeHub.Application.dll
+/Users/teste/Documents/TI/CURSOS/recipe-hub/RecipeHub/RecipeHub.Application/obj/Debug/net8.0/refint/RecipeHub.Application.dll
+/Users/teste/Documents/TI/CURSOS/recipe-hub/RecipeHub/RecipeHub.Application/obj/Debug/net8.0/RecipeHub.Application.pdb
+/Users/teste/Documents/TI/CURSOS/recipe-hub/RecipeHub/RecipeHub.Application/obj/Debug/net8.0/ref/RecipeHub.Application.dll

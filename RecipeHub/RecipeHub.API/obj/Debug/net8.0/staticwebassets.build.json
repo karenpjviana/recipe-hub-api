@@ -1,0 +1,19 @@
+{
+  "Version": 1,
+  "Hash": "3IV21I+sIpYoV1cYJ+aRNKpwoLRNMlnnqKddHZ2pcHg=",
+  "Source": "RecipeHub.API",
+  "BasePath": "_content/RecipeHub.API",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "RecipeHub.API/wwwroot",
+      "Source": "RecipeHub.API",
+      "ContentRoot": "/Users/teste/Documents/TI/CURSOS/recipe-hub/RecipeHub/RecipeHub.API/wwwroot/",
+      "BasePath": "_content/RecipeHub.API",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": []
+}

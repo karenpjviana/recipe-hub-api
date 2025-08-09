@@ -1,0 +1,20 @@
+# Pacotes para adicionar aos projetos:
+
+# RecipeHub.Infrastructure - Processamento de imagens
+dotnet add RecipeHub.Infrastructure package SixLabors.ImageSharp
+
+# RecipeHub.API - Cliente HTTP para ImgBB
+# (HttpClient já está disponível no .NET 8)
+
+# Configurações necessárias no appsettings.json:
+# {
+#   "ImgBB": {
+#     "ApiKey": "sua-chave-api-imgbb-aqui"
+#   }
+# }
+
+# Como obter chave da API ImgBB:
+# 1. Criar conta em: https://imgbb.com/
+# 2. Ir em: https://api.imgbb.com/
+# 3. Gerar API Key gratuita
+# 4. Limite: 32MB por imagem
