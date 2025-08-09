@@ -9,6 +9,7 @@ using RecipeHub.Application.Interfaces;
 using RecipeHub.Infrastructure.Interceptors;
 using RecipeHub.Application.Services;
 using RecipeHub.Infrastructure.Services;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,32 +42,58 @@ builder.Services.AddSwaggerGen(c =>
 // Database & Interceptors
 builder.Services.AddScoped<SoftDeleteInterceptor>();
 
-// Configuração da string de conexão com fallback e debug mais detalhado
-var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
-Console.WriteLine($"DATABASE_URL from env: {(string.IsNullOrEmpty(connectionString) ? "NULL/EMPTY" : connectionString.Substring(0, 20) + "...")}");
+// === CONNECTION STRING (Render/Supabase compat) ===
+string rawConn =
+    Environment.GetEnvironmentVariable("DATABASE_URL") // Render/Heroku/Supabase style (postgres://...)
+    ?? builder.Configuration.GetConnectionString("DefaultConnection"); // fallback local/appsettings
 
-if (string.IsNullOrEmpty(connectionString))
+if (string.IsNullOrWhiteSpace(rawConn))
 {
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    Console.WriteLine($"Fallback connection string: {(string.IsNullOrEmpty(connectionString) ? "NULL/EMPTY" : "SET")}");
+    Console.WriteLine("CRITICAL: No connection string found (DATABASE_URL/DefaultConnection). Using fallback local.");
+    rawConn = "Host=localhost;Database=fallback;Username=postgres;Password=password";
 }
 
-// Verificação final
-if (string.IsNullOrEmpty(connectionString))
+static string BuildNpgsqlConnectionString(string value)
 {
-    Console.WriteLine("CRITICAL ERROR: No connection string found!");
-    connectionString = "Host=localhost;Database=fallback;Username=postgres;Password=password";
+    if (value.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase))
+    {
+        var uri = new Uri(value);
+
+        // user:password (podem conter caracteres especiais)
+        var userInfo = uri.UserInfo.Split(':', 2);
+        var user = Uri.UnescapeDataString(userInfo[0]);
+        var pass = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+
+        var csb = new NpgsqlConnectionStringBuilder
+        {
+            Host = uri.Host,
+            Port = uri.IsDefaultPort ? 5432 : uri.Port,
+            Username = user,
+            Password = pass,
+            Database = uri.AbsolutePath.TrimStart('/'),
+
+            // Render/Supabase geralmente exigem TLS
+            SslMode = SslMode.Require,
+            TrustServerCertificate = true
+        };
+
+        return csb.ToString();
+    }
+
+    // Já está no formato "Host=...;Username=...;Password=...;Database=..."
+    return value;
 }
 
-Console.WriteLine($"Final connection string length: {connectionString?.Length ?? 0}");
+var npgsqlConn = BuildNpgsqlConnectionString(rawConn);
+Console.WriteLine($"DbContext using connection string length: {npgsqlConn.Length}");
 
-// Substituir configuração completamente
-builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
+// Opcional: deixar acessível via Configuration (se algo no projeto ler ConnectionStrings:DefaultConnection)
+builder.Configuration["ConnectionStrings:DefaultConnection"] = npgsqlConn;
 
+// Registra o DbContext
 builder.Services.AddDbContext<RecipeDbContext>(options =>
 {
-    Console.WriteLine($"DbContext factory using connection string length: {connectionString?.Length ?? 0}");
-    options.UseNpgsql(connectionString)
+    options.UseNpgsql(npgsqlConn)
            .AddInterceptors(new SoftDeleteInterceptor());
 });
 
@@ -87,15 +114,15 @@ builder.Services.AddScoped<IImageUploadService, DatabaseImageUploadService>();
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? 
-                jwtSettings["SecretKey"] ?? 
-                "your-super-secret-key-for-jwt-token-generation-recipe-hub-api";
-var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? 
-             jwtSettings["Issuer"] ?? 
-             "RecipeHubAPI";
-var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? 
-               jwtSettings["Audience"] ?? 
-               "RecipeHubUsers";
+var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
+                ?? jwtSettings["SecretKey"]
+                ?? "your-super-secret-key-for-jwt-token-generation-recipe-hub-api";
+var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER")
+             ?? jwtSettings["Issuer"]
+             ?? "RecipeHubAPI";
+var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
+               ?? jwtSettings["Audience"]
+               ?? "RecipeHubUsers";
 
 builder.Services.AddAuthentication(options =>
 {
@@ -131,7 +158,6 @@ builder.Services.AddCors(options =>
 });
 
 // === CONFIGURAÇÃO DO PIPELINE ===
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -140,10 +166,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Em Render normalmente já há TLS; mantenha para ambiente local também
 app.UseHttpsRedirection();
+
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();
