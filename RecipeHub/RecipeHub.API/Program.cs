@@ -185,6 +185,25 @@ builder.Services.Configure<ForwardedHeadersOptions>(opts =>
 // === BUILD APP ===
 var app = builder.Build();
 
+// === MIGRAÇÃO AUTOMÁTICA PARA PRODUÇÃO ===
+if (app.Environment.IsProduction())
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<RecipeDbContext>();
+        try
+        {
+            Console.WriteLine("🔄 Executando migrations...");
+            dbContext.Database.Migrate();
+            Console.WriteLine("✅ Migrations executadas com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Erro nas migrations: {ex.Message}");
+        }
+    }
+}
+
 // Swagger só em Dev (Render = Production)
 if (app.Environment.IsDevelopment())
 {
