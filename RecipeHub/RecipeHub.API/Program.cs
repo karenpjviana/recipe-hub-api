@@ -122,4 +122,14 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+// Auto-executar migrations em produção
+if (app.Environment.IsProduction())
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<RecipeDbContext>();
+        context.Database.Migrate();
+    }
+}
+
 app.Run();
