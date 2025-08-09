@@ -31,8 +31,9 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-# Configurar porta
-ENV ASPNETCORE_URLS=http://+:8080
+# Configurar porta para Render
+ENV ASPNETCORE_URLS=http://+:10000
 ENV ASPNETCORE_ENVIRONMENT=Production
+EXPOSE 10000
 
 ENTRYPOINT ["dotnet", "RecipeHub.API.dll"]
