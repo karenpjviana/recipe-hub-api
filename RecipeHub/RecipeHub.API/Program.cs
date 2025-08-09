@@ -41,22 +41,36 @@ builder.Services.AddSwaggerGen(c =>
 // Database & Interceptors
 builder.Services.AddScoped<SoftDeleteInterceptor>();
 
-// Configuração da string de conexão com fallback
+// Configuração da string de conexão com fallback e debug mais detalhado
 var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+Console.WriteLine($"DATABASE_URL from env: {(string.IsNullOrEmpty(connectionString) ? "NULL/EMPTY" : connectionString.Substring(0, 20) + "...")}");
+
 if (string.IsNullOrEmpty(connectionString))
 {
     connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    Console.WriteLine($"Fallback connection string: {(string.IsNullOrEmpty(connectionString) ? "NULL/EMPTY" : "SET")}");
 }
 
-// Log da string de conexão (apenas para debug)
-Console.WriteLine($"Connection String: {(string.IsNullOrEmpty(connectionString) ? "EMPTY!" : "SET")}");
+// Verificação final
+if (string.IsNullOrEmpty(connectionString))
+{
+    Console.WriteLine("CRITICAL ERROR: No connection string found!");
+    connectionString = "Host=localhost;Database=fallback;Username=postgres;Password=password";
+}
 
-// Configurar a string de conexão no Configuration para que seja usada globalmente
+Console.WriteLine($"Final connection string length: {connectionString?.Length ?? 0}");
+
+// Substituir configuração completamente
 builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
 
-builder.Services.AddDbContext<RecipeDbContext>(options =>
-    options.UseNpgsql(connectionString)
-           .AddInterceptors(new SoftDeleteInterceptor()));
+builder.Services.AddDbContext<RecipeDbContext>((serviceProvider, options) =>
+{
+    var config = serviceProvider.GetRequiredService<IConfiguration>();
+    var connStr = config.GetConnectionString("DefaultConnection");
+    Console.WriteLine($"DbContext using connection string length: {connStr?.Length ?? 0}");
+    options.UseNpgsql(connStr)
+           .AddInterceptors(new SoftDeleteInterceptor());
+});
 
 // Repositories
 builder.Services.AddScoped(typeof(IRepositoryBase<>), typeof(RepositoryBase<>));
